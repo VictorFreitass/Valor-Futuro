@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Painel Administrativo · Valor Futuro{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="admin-header">
+            <div>
+                <h1>Gestão de Imóveis</h1>
+                <p style="color: var(--gold); margin: 0.4rem 0 0; font-style: italic; font-family: var(--serif);">Painel de Controlo Premium</p>
+            </div>
+            <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+                <a href="{{ url_for('admin.add_property') }}" class="btn btn-primary">+ Novo Imóvel</a>
+                <a href="{{ url_for('admin.change_password') }}" class="btn btn-tertiary">Alterar Password</a>
+                <a href="{{ url_for('admin.logout_view') }}" class="btn btn-secondary">Sair</a>
+            </div>
+        </div>
+
+        {% if properties %}
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Imóvel</th>
+                        <th>Localização</th>
+                        <th>Preço</th>
+                        <th>Detalhes</th>
+                        <th>Tipo</th>
+                        <th>Estado</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for property in properties %}
+                    <tr>
+                        <td><strong style="color: var(--text-primary);">{{ property.title }}</strong></td>
+                        <td>{{ property.location }}</td>
+                        <td style="color: var(--gold); font-weight: 500;">Kz {{ property.price|number_format(0, ',', '.') }}</td>
+                        <td>
+                            <span style="background: var(--gold-soft); padding: 0.3rem 0.6rem; border-radius: 2px; font-size: 0.8rem;">
+                                {{ property.bedrooms }}Q · {{ property.bathrooms }}WC · {{ property.area|int }}m²
+                            </span>
+                        </td>
+                        <td>{{ property.property_type|title }}</td>
+                        <td>
+                            {% if property.is_featured %}
+                            <span style="background: var(--gold); color: var(--dark-bg); padding: 0.3rem 0.6rem; border-radius: 2px; font-size: 0.75rem; font-weight: 600; letter-spacing: 1px;">DESTAQUE</span>
+                            {% else %}
+                            <span style="color: var(--text-muted); font-size: 0.85rem;">Normal</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 0.4rem;">
+                                <a href="{{ url_for('admin.edit_property', id=property.id) }}" class="btn btn-tertiary" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">Editar</a>
+                                <a href="{{ url_for('admin.delete_property', id=property.id) }}"
+                                   class="btn btn-danger"
+                                   style="padding: 0.4rem 0.8rem; font-size: 0.75rem;"
+                                   onclick="return confirm('Tem a certeza que deseja eliminar este imóvel? Esta ação é irreversível.')">
+                                   Eliminar
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 2rem; padding: 1.5rem; background: var(--dark-secondary); border-left: 3px solid var(--gold); border-radius: 2px;">
+            <strong style="color: var(--gold); letter-spacing: 1px;">Estatísticas</strong>
+            <p style="margin-top: 0.5rem; color: var(--text-secondary);">
+                Total: <strong style="color: var(--gold);">{{ properties|length }}</strong> ·
+                Em destaque: <strong style="color: var(--gold);">{{ properties|selectattr('is_featured')|list|length }}</strong>
+            </p>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 4rem 1rem; background: var(--dark-secondary); border: 1px dashed var(--border-color); border-radius: 4px;">
+            <p style="font-size: 1.05rem; color: var(--text-secondary); margin-bottom: 1.5rem;">Ainda não existem imóveis registados.</p>
+            <a href="{{ url_for('admin.add_property') }}" class="btn btn-primary">Criar Primeiro Imóvel</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

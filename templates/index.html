@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Valor Futuro · Imobiliária de Luxo{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-logo-wrap">
+            <img src="{{ url_for('static', filename='images/logo-hero.png') }}" alt="Valor Futuro Imobiliária" class="hero-logo">
+        </div>
+        <p class="hero-tagline">O seu próximo investimento começa aqui</p>
+        <p class="hero-description">A imobiliária de luxo de Angola. Uma seleção exclusiva de imóveis premium em Luanda, Talatona, Benguela e Lubango — para quem reconhece o verdadeiro valor.</p>
+        <div class="hero-actions">
+            <a href="{{ url_for('main.properties') }}" class="btn btn-primary">Explorar Imóveis</a>
+            <a href="#destaque" class="btn btn-secondary">Em Destaque</a>
+        </div>
+    </div>
+    <div class="hero-scroll-indicator" aria-hidden="true">
+        <span>scroll</span>
+        <div class="scroll-line"></div>
+    </div>
+</section>
+
+<section class="section" id="destaque">
+    <div class="container">
+        <div class="section-title reveal">
+            <h2>Imóveis em Destaque</h2>
+            <p>Coleção curada · Padrão de excelência</p>
+        </div>
+
+        <div class="properties-grid">
+            {% if featured_properties %}
+                {% for property in featured_properties %}
+                {% set first_image = property.images.split(',')[0] if property.images else None %}
+                <article class="property-card reveal">
+                    <div class="property-image-wrapper">
+                        {% if property.is_featured %}
+                        <span class="property-badge">Destaque</span>
+                        {% endif %}
+                        {% if first_image %}
+                        <img src="{{ url_for('static', filename='uploads/' + first_image) }}" alt="{{ property.title }}" class="property-image" loading="lazy">
+                        {% else %}
+                        <img src="{{ url_for('static', filename='images/placeholder.svg') }}" alt="Sem imagem disponível" class="property-image">
+                        {% endif %}
+                    </div>
+                    <div class="property-content">
+                        <h3 class="property-title">{{ property.title }}</h3>
+                        <p class="property-location">◆ {{ property.location }}</p>
+                        <p class="property-price">Kz {{ property.price|number_format(0, ',', '.') }}</p>
+
+                        <div class="property-details">
+                            <div class="property-detail-item"><strong>{{ property.bedrooms }}</strong><span>Quartos</span></div>
+                            <div class="property-detail-item"><strong>{{ property.bathrooms }}</strong><span>WCs</span></div>
+                            <div class="property-detail-item"><strong>{{ property.area|int }}</strong><span>m²</span></div>
+                        </div>
+
+                        <p class="property-description">{{ property.description[:140] }}{% if property.description|length > 140 %}…{% endif %}</p>
+
+                        <div class="property-actions">
+                            <a href="{{ url_for('main.property_detail', id=property.id) }}" class="btn btn-secondary">Ver Detalhes</a>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            {% else %}
+                <p style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+                    Brevemente disponíveis novos imóveis em destaque.
+                </p>
+            {% endif %}
+        </div>
+
+        <div style="text-align: center; margin-top: 3.5rem;">
+            <a href="{{ url_for('main.properties') }}" class="btn btn-primary">Ver Toda a Coleção</a>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="section-title reveal">
+            <h2>Porquê Valor Futuro</h2>
+            <p>Discrição · Conhecimento · Confiança</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card reveal">
+                <div class="feature-icon">★</div>
+                <h3>Premium</h3>
+                <p>Seleção exclusiva de imóveis de luxo com critérios rigorosos de qualidade arquitetónica e localização.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon">◆</div>
+                <h3>Profissional</h3>
+                <p>Equipa especializada com experiência internacional em real estate de alto padrão e investimento.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon">✦</div>
+                <h3>Confiável</h3>
+                <p>Transparência total, assessoria completa e total discrição em cada etapa do processo.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Editar · {{ property.title }}{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container" style="max-width: 920px;">
+        <div class="admin-header">
+            <div>
+                <h1>Editar Imóvel</h1>
+                <p style="color: var(--gold); margin: 0.4rem 0 0; font-style: italic;">{{ property.title }}</p>
+            </div>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">← Voltar</a>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" style="background: var(--dark-secondary); padding: 2.5rem; border: 1px solid var(--border-color); border-radius: 4px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem;">
+                <div class="form-group">
+                    <label for="title">Título do Imóvel</label>
+                    <input type="text" id="title" name="title" value="{{ property.title }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="price">Preço (Kz)</label>
+                    <input type="number" id="price" name="price" step="0.01" min="0" value="{{ property.price }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="location">Localização</label>
+                    <input type="text" id="location" name="location" value="{{ property.location }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="property_type">Tipo de Imóvel</label>
+                    <select id="property_type" name="property_type" required>
+                        {% for value, label in [('apartamento','Apartamento'),('casa','Casa'),('villa','Villa'),('escritorio','Escritório'),('loft','Loft')] %}
+                        <option value="{{ value }}" {% if property.property_type == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="bedrooms">Quartos</label>
+                    <input type="number" id="bedrooms" name="bedrooms" min="0" value="{{ property.bedrooms }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="bathrooms">Casas de Banho</label>
+                    <input type="number" id="bathrooms" name="bathrooms" min="0" value="{{ property.bathrooms }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="area">Área (m²)</label>
+                    <input type="number" id="area" name="area" step="0.01" min="0" value="{{ property.area }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="status">Estado</label>
+                    <select id="status" name="status" required>
+                        <option value="para venda" {% if property.status == 'para venda' %}selected{% endif %}>Para Venda</option>
+                        <option value="aluguel" {% if property.status == 'aluguel' %}selected{% endif %}>Para Aluguer</option>
+                        <option value="vendido" {% if property.status == 'vendido' %}selected{% endif %}>Vendido</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Descrição Detalhada</label>
+                <textarea id="description" name="description" required>{{ property.description }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="images">Adicionar Novas Imagens (opcional)</label>
+                <input type="file" id="images" name="images" multiple accept="image/*">
+                <small style="color: var(--text-muted); display: block; margin-top: 0.5rem;">As imagens existentes serão mantidas.</small>
+            </div>
+
+            {% if property.images %}
+            <div class="form-group">
+                <label style="color: var(--gold);">Imagens Existentes</label>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 0.8rem; margin-top: 0.6rem;">
+                    {% for image in property.images.split(',') %}
+                    <div style="overflow: hidden; border-radius: 2px; aspect-ratio: 1; border: 1px solid var(--border-color);">
+                        <img src="{{ url_for('static', filename='uploads/' + image) }}" alt="Imagem" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="form-group" style="display: flex; align-items: center; gap: 0.6rem;">
+                <input type="checkbox" id="is_featured" name="is_featured" {% if property.is_featured %}checked{% endif %}>
+                <label for="is_featured" style="margin: 0; text-transform: none; font-weight: 400; letter-spacing: normal;">Mostrar em destaque na página inicial</label>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Guardar Alterações</button>
+                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary" style="flex: 1;">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

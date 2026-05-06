@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}{{ property.title }} · Valor Futuro{% endblock %}
+
+{% block content %}
+{% set image_list = property.images.split(',') if property.images else [] %}
+
+<div class="property-detail-header">
+    <div class="property-gallery">
+        {% if image_list %}
+            <img id="main-image" src="{{ url_for('static', filename='uploads/' + image_list[0]) }}" alt="{{ property.title }}" class="property-main-image">
+            {% if image_list|length > 1 %}
+            <div class="property-thumbnails">
+                {% for image in image_list[1:4] %}
+                <img src="{{ url_for('static', filename='uploads/' + image) }}" alt="Vista {{ loop.index + 1 }}" class="property-thumbnail" data-full="{{ url_for('static', filename='uploads/' + image) }}">
+                {% endfor %}
+                {% if image_list|length < 4 %}
+                    {% for _ in range(4 - image_list|length) %}
+                    <div style="background: var(--dark-tertiary); border: 1px solid var(--border-color);"></div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            {% endif %}
+        {% else %}
+            <img src="{{ url_for('static', filename='images/placeholder.svg') }}" alt="Sem imagem" class="property-main-image">
+        {% endif %}
+    </div>
+</div>
+
+<section class="section" style="padding-top: 0;">
+    <div class="container">
+        <div class="property-detail-grid">
+            <div>
+                <h1>{{ property.title }}</h1>
+                <p class="property-location" style="font-size: 1rem;">◆ {{ property.location }}</p>
+
+                <p class="property-price" style="margin: 1.5rem 0; font-size: 2.6rem;">Kz {{ property.price|number_format(0, ',', '.') }}</p>
+
+                <div class="property-details" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 2rem;">
+                    <div class="property-detail-item"><strong>{{ property.bedrooms }}</strong><span>Quartos</span></div>
+                    <div class="property-detail-item"><strong>{{ property.bathrooms }}</strong><span>WCs</span></div>
+                    <div class="property-detail-item"><strong>{{ property.area|int }}</strong><span>m²</span></div>
+                    <div class="property-detail-item"><strong>{{ property.property_type|title }}</strong><span>Tipo</span></div>
+                </div>
+
+                <div class="description-block">
+                    <h3>Descrição</h3>
+                    <p>{{ property.description }}</p>
+                </div>
+
+                <div class="status-callout">
+                    <strong>Estado:</strong> {{ property.status|title }}
+                </div>
+
+                <div class="map-block">
+                    <h3>Localização</h3>
+                    <div class="map-frame">
+                        <iframe
+                            src="https://maps.google.com/maps?q={{ (property.location ~ ', Angola')|urlencode }}&z=14&output=embed"
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"
+                            allowfullscreen
+                            title="Mapa · {{ property.location }}"></iframe>
+                    </div>
+                    <a href="https://www.google.com/maps/search/?api=1&query={{ (property.location ~ ', Angola')|urlencode }}" target="_blank" rel="noopener" class="map-open-link">
+                        Abrir no Google Maps ↗
+                    </a>
+                </div>
+
+                <a href="https://wa.me/244936687508?text=Ol%C3%A1%2C%20estou%20interessado%20no%20im%C3%B3vel%3A%20{{ property.title|urlencode }}" target="_blank" rel="noopener" class="btn btn-primary" style="font-size: 0.9rem; padding: 1.1rem 2.5rem;">
+                    Contactar via WhatsApp
+                </a>
+            </div>
+
+            <aside class="property-summary-card">
+                <h3 style="color: var(--gold); margin-bottom: 1.5rem; font-size: 1.3rem;">Resumo do Imóvel</h3>
+
+                <div class="summary-row"><span>Preço</span><strong>Kz {{ property.price|number_format(0, ',', '.') }}</strong></div>
+                <div class="summary-row"><span>Área</span><strong>{{ property.area|int }} m²</strong></div>
+                <div class="summary-row"><span>Quartos</span><strong>{{ property.bedrooms }}</strong></div>
+                <div class="summary-row"><span>WCs</span><strong>{{ property.bathrooms }}</strong></div>
+                <div class="summary-row"><span>Tipo</span><strong>{{ property.property_type|title }}</strong></div>
+                {% if property.area and property.price %}
+                <div class="summary-row"><span>Kz/m²</span><strong>Kz {{ ((property.price / property.area)|round(0))|int|number_format(0, ',', '.') }}</strong></div>
+                {% endif %}
+
+                <a href="https://wa.me/244936687508" target="_blank" rel="noopener" class="btn btn-secondary" style="width: 100%; margin-top: 1.5rem;">Mais Informações</a>
+            </aside>
+        </div>
+    </div>
+</section>
+
+{% if similar_properties %}
+<section class="section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Imóveis Semelhantes</h2>
+        </div>
+        <div class="properties-grid">
+            {% for similar in similar_properties %}
+            {% set s_first = similar.images.split(',')[0] if similar.images else None %}
+            <article class="property-card">
+                <div class="property-image-wrapper">
+                    <span class="property-badge">{{ similar.property_type|title }}</span>
+                    {% if s_first %}
+                    <img src="{{ url_for('static', filename='uploads/' + s_first) }}" alt="{{ similar.title }}" class="property-image" loading="lazy">
+                    {% else %}
+                    <img src="{{ url_for('static', filename='images/placeholder.svg') }}" alt="Sem imagem" class="property-image">
+                    {% endif %}
+                </div>
+                <div class="property-content">
+                    <h3 class="property-title">{{ similar.title }}</h3>
+                    <p class="property-location">◆ {{ similar.location }}</p>
+                    <p class="property-price">Kz {{ similar.price|number_format(0, ',', '.') }}</p>
+
+                    <div class="property-details">
+                        <div class="property-detail-item"><strong>{{ similar.bedrooms }}</strong><span>Quartos</span></div>
+                        <div class="property-detail-item"><strong>{{ similar.bathrooms }}</strong><span>WCs</span></div>
+                        <div class="property-detail-item"><strong>{{ similar.area|int }}</strong><span>m²</span></div>
+                    </div>
+
+                    <div class="property-actions">
+                        <a href="{{ url_for('main.property_detail', id=similar.id) }}" class="btn btn-secondary">Ver Detalhes</a>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin · Valor Futuro</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <img src="{{ url_for('static', filename='images/logo-header.png') }}" alt="Valor Futuro" class="login-logo">
+            <p>Painel Administrativo</p>
+
+            {% with messages = get_flashed_messages(category_filter=['error']) %}
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-error">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST">
+                <div class="form-group">
+                    <label for="username">Utilizador</label>
+                    <input type="text" id="username" name="username" placeholder="Nome de utilizador" autocomplete="username" required autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">Entrar</button>
+            </form>
+
+            <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); text-align: center;">
+                <a href="{{ url_for('main.index') }}" style="font-size: 0.85rem; letter-spacing: 1px;">← Voltar ao Site</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
