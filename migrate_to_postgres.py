@@ -7,8 +7,10 @@ A URL pode estar no formato `postgres://user:pass@host:port/db` (Render/Heroku)
 ou `postgresql://...`. O script reescreve automaticamente.
 
 O que faz:
-  1. Lê o esquema da BD SQLite via reflexão (não depende dos modelos).
-  2. Recria as tabelas no Postgres caso não existam.
+  1. Importa os modelos do projecto (User, Property) — schema portável
+     que cria os tipos correctos para cada dialecto (DATETIME em SQLite,
+     TIMESTAMP em Postgres).
+  2. Cria as tabelas no Postgres caso não existam.
   3. Copia todas as linhas preservando os IDs originais (truncate + insert).
   4. Reposiciona as sequences serial do Postgres para o próximo MAX(id)+1.
 
@@ -18,7 +20,7 @@ from __future__ import annotations
 
 import os
 import sys
-from sqlalchemy import MetaData, create_engine, inspect, text
+from sqlalchemy import create_engine, text
 
 
 def _normalise_url(url: str) -> str:
@@ -28,15 +30,14 @@ def _normalise_url(url: str) -> str:
 
 
 def _redact(url: str) -> str:
-    """Esconde a password na URL para imprimir nos logs."""
-    if '@' not in url:
+    if '@' not in url or '://' not in url:
         return url
-    head, tail = url.rsplit('@', 1)
-    if '//' in head and ':' in head.split('//', 1)[1]:
-        scheme, rest = head.split('//', 1)
-        user = rest.split(':', 1)[0]
-        return f'{scheme}//{user}:***@{tail}'
-    return url
+    scheme, rest = url.split('://', 1)
+    if ':' not in rest.split('@', 1)[0]:
+        return url
+    user_pass, host_db = rest.split('@', 1)
+    user = user_pass.split(':', 1)[0]
+    return f'{scheme}://{user}:***@{host_db}'
 
 
 def main() -> int:
@@ -57,38 +58,33 @@ def main() -> int:
     print(f'Destino: {_redact(target_url)}')
     print()
 
+    # 1) Importar os modelos do projecto. Isto regista as tabelas em db.metadata
+    #    com os tipos genéricos do SQLAlchemy (DateTime → TIMESTAMP em Postgres).
+    from config.settings import db  # noqa: F401
+    import models  # noqa: F401  — importa User, Property → regista nas metadata
+
     src = create_engine(src_url)
     dst = create_engine(target_url, pool_pre_ping=True)
 
-    # 1) Refletir o schema da origem
-    metadata = MetaData()
-    metadata.reflect(bind=src)
-
+    metadata = db.metadata
     if not metadata.tables:
-        print('[ERRO] BD SQLite vazia (sem tabelas).')
+        print('[ERRO] Nenhuma tabela encontrada nos modelos.')
         return 1
 
-    print(f'Tabelas detectadas: {", ".join(metadata.tables.keys())}')
+    print(f'Tabelas a migrar: {", ".join(metadata.tables.keys())}')
     print()
 
-    # 2) Criar schema no destino
-    print('A criar schema no Postgres (se necessário)…')
+    # 2) Recriar o schema no destino para garantir que reflete as definições
+    #    actuais dos modelos (drop+create é idempotente e seguro porque a
+    #    migração é destrutiva por design).
+    print('A recriar schema no Postgres…')
+    metadata.drop_all(bind=dst)
     metadata.create_all(bind=dst)
 
-    # 3) Copiar dados (preservando IDs) — limpa primeiro, em ordem inversa de FK
     table_order = list(metadata.sorted_tables)
-    total_rows = 0
-
-    # Apagar conteúdo no destino na ordem inversa para respeitar FKs
-    print('A limpar conteúdo existente no destino…')
-    with dst.begin() as conn:
-        for table in reversed(table_order):
-            try:
-                conn.execute(table.delete())
-            except Exception as e:
-                print(f'  [warn] {table.name}: {e}')
 
     print('\nA copiar linhas:')
+    total_rows = 0
     for table in table_order:
         with src.connect() as sc:
             rows = sc.execute(table.select()).fetchall()
@@ -100,18 +96,15 @@ def main() -> int:
         total_rows += len(rows)
         print(f'  {table.name:<20} {len(rows)} linhas copiadas')
 
-    # 4) Resetar sequences do Postgres para evitar colisões em INSERTs futuros
+    # 4) Resetar sequences para evitar colisões em INSERTs futuros
     print('\nA actualizar sequences:')
-    inspector = inspect(dst)
     with dst.begin() as conn:
         for table in table_order:
+            pk_cols = [c.name for c in table.primary_key.columns]
+            if not pk_cols:
+                continue
+            pk = pk_cols[0]
             try:
-                # Procura a coluna PK serial (geralmente "id")
-                pk_cols = [c.name for c in table.primary_key.columns]
-                if not pk_cols:
-                    continue
-                pk = pk_cols[0]
-                # pg_get_serial_sequence devolve null se a coluna não tiver sequence
                 stmt = text(
                     f"SELECT setval(pg_get_serial_sequence(:t, :c), "
                     f"COALESCE((SELECT MAX(\"{pk}\") FROM \"{table.name}\"), 1), "
