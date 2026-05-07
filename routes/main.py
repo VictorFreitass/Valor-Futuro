@@ -38,3 +38,8 @@ def property_detail(id):
     property = Property.query.get_or_404(id)
     similar_properties = Property.query.filter_by(property_type=property.property_type).filter(Property.id != id).limit(3).all()
     return render_template('property_detail.html', property=property, similar_properties=similar_properties)
+
+
+@main.route('/sobre')
+def about():
+    return render_template('sobre.html')

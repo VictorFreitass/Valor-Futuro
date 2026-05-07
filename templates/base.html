@@ -21,6 +21,7 @@
             <nav>
                 <a href="{{ url_for('main.index') }}">Início</a>
                 <a href="{{ url_for('main.properties') }}">Imóveis</a>
+                <a href="{{ url_for('main.about') }}">Sobre</a>
                 {% if current_user.is_authenticated %}
                 <a href="{{ url_for('admin.dashboard') }}" class="admin-link">Painel</a>
                 {% endif %}

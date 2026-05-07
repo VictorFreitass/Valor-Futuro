@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Sobre Nós · Valor Futuro{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <div class="container">
+        <span class="page-hero-eyebrow">◆ Imobiliária Premium · Angola</span>
+        <h1 class="page-hero-title">Sobre Nós</h1>
+        <p class="page-hero-subtitle">Onde cada imóvel é uma escolha cuidada e cada cliente uma relação de confiança.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="about-grid">
+            <div class="reveal">
+                <h2 style="margin-bottom: 1.5rem;">A Nossa História</h2>
+                <p>A <strong style="color: var(--gold);">Valor Futuro</strong> nasceu da convicção de que o investimento imobiliário em Angola merece um padrão de exigência internacional.</p>
+                <p>Em mercados como Luanda, Talatona, Benguela e Lubango, identificamos e curamos uma seleção criteriosa de imóveis premium — propriedades que combinam <em>localização privilegiada</em>, <em>arquitectura de excelência</em> e <em>potencial de valorização sólido</em>.</p>
+                <p>Trabalhamos com discrição, profissionalismo e foco no longo prazo. O nosso objectivo não é fechar transacções rápidas, mas estabelecer parcerias duradouras com proprietários, investidores e famílias que reconhecem o valor verdadeiro de cada metro quadrado.</p>
+            </div>
+            <aside class="about-side reveal">
+                <div class="about-side-inner">
+                    <img src="{{ url_for('static', filename='images/logo-hero.png') }}" alt="Valor Futuro" class="about-logo">
+                    <p class="about-tag">est. Angola</p>
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>
+
+<section class="section" style="padding-top: 2rem;">
+    <div class="container">
+        <div class="section-title reveal">
+            <h2>Os Nossos Valores</h2>
+            <p>Os pilares que guiam cada decisão</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card reveal">
+                <div class="feature-icon">★</div>
+                <h3>Excelência</h3>
+                <p>Selecção rigorosa de imóveis de luxo, com critérios exigentes de localização, arquitectura, segurança e potencial de valorização.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon">◆</div>
+                <h3>Discrição</h3>
+                <p>Tratamos cada negócio com a confidencialidade que os nossos clientes esperam. Privacidade total em todas as etapas.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon">✦</div>
+                <h3>Confiança</h3>
+                <p>Transparência absoluta nos processos. Assessoria completa do primeiro contacto à escritura — e além.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section" style="background: linear-gradient(135deg, rgba(212,175,55,0.06), rgba(10,10,10,0.05));">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat reveal">
+                <span class="stat-value">9+</span>
+                <span class="stat-label">Cidades em Angola</span>
+            </div>
+            <div class="stat reveal">
+                <span class="stat-value">25+</span>
+                <span class="stat-label">Imóveis Premium</span>
+            </div>
+            <div class="stat reveal">
+                <span class="stat-value">100%</span>
+                <span class="stat-label">Discrição Garantida</span>
+            </div>
+            <div class="stat reveal">
+                <span class="stat-value">24/7</span>
+                <span class="stat-label">Disponibilidade</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <blockquote class="pull-quote reveal">
+            <p>“O luxo verdadeiro está no cuidado com os detalhes. Cada imóvel que apresentamos passou por um processo de validação que vai além do óbvio — porque o seu património merece esse cuidado.”</p>
+            <footer>— Valor Futuro Imobiliária</footer>
+        </blockquote>
+    </div>
+</section>
+
+<section class="section" style="text-align: center;">
+    <div class="container">
+        <div class="section-title reveal">
+            <h2>Pronto para começar?</h2>
+            <p>Conheça a nossa selecção ou entre em contacto directo</p>
+        </div>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
+            <a href="{{ url_for('main.properties') }}" class="btn btn-primary">Explorar Imóveis</a>
+            <a href="https://wa.me/244936687508?text=Ol%C3%A1%20Valor%20Futuro%2C%20gostaria%20de%20saber%20mais." target="_blank" rel="noopener" class="btn btn-secondary">WhatsApp +244 936 687 508</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
