@@ -102,8 +102,12 @@ def create_app(config_name: str | None = None):
     return app
 
 
+# Instância de módulo — gunicorn pode chamar `gunicorn app:app` directamente.
+# Também é o que `python app.py` usa para o servidor de desenvolvimento.
+app = create_app()
+
+
 if __name__ == '__main__':
-    application = create_app()
-    debug = os.environ.get('FLASK_DEBUG', '1') == '1' and not application.config.get('TESTING')
+    debug = os.environ.get('FLASK_DEBUG', '1') == '1' and not app.config.get('TESTING')
     port = int(os.environ.get('PORT', 5000))
-    application.run(host='0.0.0.0', port=port, debug=debug)
+    app.run(host='0.0.0.0', port=port, debug=debug)

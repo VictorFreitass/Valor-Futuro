@@ -12,7 +12,7 @@ services:
     plan: free          # Free dorme após 15 min sem tráfego (acorda em ~30s)
     region: frankfurt   # Latência mais baixa para Angola
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn 'app:create_app()' --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120
     healthCheckPath: /
     autoDeploy: true
     envVars:
