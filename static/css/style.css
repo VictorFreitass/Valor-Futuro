@@ -1482,6 +1482,30 @@ footer p { margin-bottom: 0.5rem; }
 
 .about-grid p { line-height: 1.85; margin-bottom: 1rem; }
 
+.founder-signature {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-gold);
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.founder-name {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1.6rem;
+    color: var(--gold);
+    letter-spacing: 1px;
+}
+
+.founder-role {
+    font-size: 0.78rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
 .about-side {
     text-align: center;
     padding: 2.5rem;
