@@ -1,12 +1,29 @@
 import os
 import sys
 
-from flask import Flask
+from flask import Flask, url_for
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from config.settings import config, db, login_manager, migrate
 
 sys.path.insert(0, os.path.dirname(__file__))
+
+
+def _configure_cloudinary() -> bool:
+    """Inicializa Cloudinary se CLOUDINARY_URL estiver definida.
+
+    Devolve True se ficou configurado; False caso contrário (dev local sem
+    credenciais — uploads voltam para o filesystem).
+    """
+    cloudinary_url = os.environ.get('CLOUDINARY_URL')
+    if not cloudinary_url:
+        return False
+    try:
+        import cloudinary
+        cloudinary.config(secure=True)  # Lê CLOUDINARY_URL automaticamente
+        return bool(cloudinary.config().cloud_name)
+    except Exception:
+        return False
 
 
 def number_format_filter(value, decimals=0, decimal_sep=',', thousands_sep='.'):
@@ -74,6 +91,25 @@ def create_app(config_name: str | None = None):
     login_manager.login_message_category = 'error'
 
     app.jinja_env.filters['number_format'] = number_format_filter
+
+    # Cloudinary opcional — se configurado, novos uploads vão para a cloud.
+    app.config['CLOUDINARY_ENABLED'] = _configure_cloudinary()
+
+    @app.context_processor
+    def _image_helpers():
+        """Helper `image_url(stored)` para templates.
+
+        Aceita um item da lista `Property.images` (filename ou URL Cloudinary)
+        e devolve a URL renderizável. Backwards-compatible com uploads antigos.
+        """
+        def image_url(stored):
+            if not stored:
+                return url_for('static', filename='images/placeholder.svg')
+            stored = stored.strip()
+            if stored.startswith(('http://', 'https://')):
+                return stored
+            return url_for('static', filename='uploads/' + stored)
+        return dict(image_url=image_url)
 
     @login_manager.user_loader
     def load_user(user_id):

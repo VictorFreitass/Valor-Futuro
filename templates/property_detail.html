@@ -8,11 +8,11 @@
 <div class="property-detail-header">
     <div class="property-gallery">
         {% if image_list %}
-            <img id="main-image" src="{{ url_for('static', filename='uploads/' + image_list[0]) }}" alt="{{ property.title }}" class="property-main-image">
+            <img id="main-image" src="{{ image_url(image_list[0]) }}" alt="{{ property.title }}" class="property-main-image">
             {% if image_list|length > 1 %}
             <div class="property-thumbnails">
                 {% for image in image_list[1:4] %}
-                <img src="{{ url_for('static', filename='uploads/' + image) }}" alt="Vista {{ loop.index + 1 }}" class="property-thumbnail" data-full="{{ url_for('static', filename='uploads/' + image) }}">
+                <img src="{{ image_url(image) }}" alt="Vista {{ loop.index + 1 }}" class="property-thumbnail" data-full="{{ image_url(image) }}">
                 {% endfor %}
                 {% if image_list|length < 4 %}
                     {% for _ in range(4 - image_list|length) %}
@@ -103,7 +103,7 @@
                 <div class="property-image-wrapper">
                     <span class="property-badge">{{ similar.property_type|title }}</span>
                     {% if s_first %}
-                    <img src="{{ url_for('static', filename='uploads/' + s_first) }}" alt="{{ similar.title }}" class="property-image" loading="lazy">
+                    <img src="{{ image_url(s_first) }}" alt="{{ similar.title }}" class="property-image" loading="lazy">
                     {% else %}
                     <img src="{{ url_for('static', filename='images/placeholder.svg') }}" alt="Sem imagem" class="property-image">
                     {% endif %}

@@ -1,4 +1,5 @@
 import os
+import re
 import time
 import uuid
 from collections import deque
@@ -16,6 +17,7 @@ from models import User, Property
 admin = Blueprint('admin', __name__)
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+CLOUDINARY_FOLDER = 'valor-futuro/properties'
 
 # In-memory login throttle (per IP). Single-process; for multi-worker deployments
 # replace with Redis or Flask-Limiter.
@@ -55,7 +57,33 @@ def allowed_file(filename: str) -> bool:
 
 
 def _save_uploads(files):
+    """Guarda upload — Cloudinary se configurado, senão filesystem local.
+
+    Devolve uma lista de strings: URLs Cloudinary (https://…) ou nomes de
+    ficheiro relativos a UPLOAD_FOLDER.
+    """
     saved = []
+    use_cloudinary = current_app.config.get('CLOUDINARY_ENABLED', False)
+
+    if use_cloudinary:
+        import cloudinary.uploader
+        for f in files:
+            if not f or not f.filename or not allowed_file(f.filename):
+                continue
+            try:
+                result = cloudinary.uploader.upload(
+                    f,
+                    folder=CLOUDINARY_FOLDER,
+                    resource_type='image',
+                    unique_filename=True,
+                    overwrite=False,
+                )
+                saved.append(result['secure_url'])
+            except Exception as exc:
+                current_app.logger.error(f'Cloudinary upload falhou: {exc}')
+        return saved
+
+    # Fallback filesystem (dev local sem CLOUDINARY_URL)
     upload_dir = current_app.config['UPLOAD_FOLDER']
     os.makedirs(upload_dir, exist_ok=True)
     for f in files:
@@ -69,17 +97,40 @@ def _save_uploads(files):
     return saved
 
 
-def _delete_image_files(filenames):
+def _extract_cloudinary_public_id(url: str) -> str | None:
+    """Extrai o public_id de uma URL Cloudinary para poder apagar."""
+    m = re.search(r'/upload/(?:v\d+/)?(.+?)(?:\.[^./]+)?$', url)
+    return m.group(1) if m else None
+
+
+def _delete_image_files(stored_items):
+    """Apaga imagens — Cloudinary para URLs, filesystem para nomes locais."""
     upload_dir = current_app.config['UPLOAD_FOLDER']
-    for name in filenames:
-        if not name:
+    use_cloudinary = current_app.config.get('CLOUDINARY_ENABLED', False)
+
+    for item in stored_items:
+        if not item:
             continue
-        path = os.path.join(upload_dir, name)
-        if os.path.isfile(path):
+        item = item.strip()
+        if item.startswith(('http://', 'https://')):
+            if not use_cloudinary:
+                continue
+            public_id = _extract_cloudinary_public_id(item)
+            if not public_id:
+                continue
             try:
-                os.remove(path)
-            except OSError:
-                pass
+                import cloudinary.uploader
+                cloudinary.uploader.destroy(public_id, invalidate=True)
+            except Exception as exc:
+                current_app.logger.warning(f'Cloudinary destroy falhou ({public_id}): {exc}')
+        else:
+            # Imagem em filesystem local (dev ou legacy)
+            path = os.path.join(upload_dir, item)
+            if os.path.isfile(path):
+                try:
+                    os.remove(path)
+                except OSError:
+                    pass
 
 
 def _read_property_form():

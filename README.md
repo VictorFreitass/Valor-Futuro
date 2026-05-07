@@ -168,12 +168,31 @@ A localização é controlada pela env var `UPLOAD_FOLDER` (default: `static/upl
 
 ⚠️ **No plano Free do Render o filesystem é efémero** — todas as imagens carregadas pelo painel admin **desaparecem** em cada deploy/restart.
 
-Soluções:
+Soluções suportadas pelo código:
 
-1. **Persistent disk** (plano Starter, ~$1/mês):
-   - No `render.yaml` descomenta o bloco `disk:` e a env var `UPLOAD_FOLDER`.
-   - Ou na UI: web service → **Disks** → Add Disk · mount em `/var/data/uploads`, 1 GB.
-2. **Storage externo** (Cloudinary, AWS S3, etc.) — recomendado para produção real. Implica alterar o código de upload para usar SDK em vez de filesystem.
+#### Opção A · Cloudinary *(recomendada — grátis 25 GB)*
+
+O projecto detecta automaticamente a env var `CLOUDINARY_URL`: se estiver
+definida, todos os novos uploads vão para a Cloudinary; se não, fica em
+filesystem (útil em dev local sem credenciais).
+
+1. Cria conta em https://cloudinary.com (Sign up free, plano "Free")
+2. Após login, vai a https://console.cloudinary.com → secção **API Environment variable** (canto superior)
+3. Copia o `CLOUDINARY_URL` (formato `cloudinary://<api_key>:<api_secret>@<cloud_name>`)
+4. No Render: web service `valor-futuro` → **Environment** → adicionar:
+   - **Key:** `CLOUDINARY_URL`
+   - **Value:** *(a string copiada)*
+5. Save → Render redeploia em ~2 min
+6. Após redeploy, todas as imagens carregadas no painel admin ficam guardadas na Cloudinary e sobrevivem a redeploys.
+
+Imagens antigas em `static/uploads/` continuam acessíveis (compatibilidade
+retroactiva — o helper `image_url` decide automaticamente entre URL Cloudinary
+e caminho local).
+
+#### Opção B · Render Persistent Disk *(plano Starter, ~$1/mês para 1 GB)*
+
+- No `render.yaml` descomenta o bloco `disk:` e a env var `UPLOAD_FOLDER`.
+- Ou na UI: web service → **Disks** → Add Disk · mount em `/var/data/uploads`.
 
 ### Base de dados
 - Postgres do plano Free é apagado após **90 dias** de inactividade.

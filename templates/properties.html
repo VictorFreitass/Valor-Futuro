@@ -47,7 +47,7 @@
                 <div class="property-image-wrapper">
                     <span class="property-badge">{{ property.property_type|title }}</span>
                     {% if first_image %}
-                    <img src="{{ url_for('static', filename='uploads/' + first_image) }}" alt="{{ property.title }}" class="property-image" loading="lazy">
+                    <img src="{{ image_url(first_image) }}" alt="{{ property.title }}" class="property-image" loading="lazy">
                     {% else %}
                     <img src="{{ url_for('static', filename='images/placeholder.svg') }}" alt="Sem imagem" class="property-image">
                     {% endif %}
